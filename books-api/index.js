@@ -26,7 +26,15 @@ async function getAllBooks() {
 async function getOneBook(index) {
   const data = await fs.readFile("books-data.json", "utf8");
   const parsedBooks = JSON.parse(data);
-  return parsedBooks[index];
+
+  // return parsedBooks[index];
+  const book = parsedBooks[index];
+
+  if (!book) {
+    throw new Error("Book was not found");
+  }
+
+  return book;
 }
 
 // 3. getOneBookTitle(index)
@@ -55,12 +63,20 @@ app.get("/get-all-books", async (req, res) => {
 // 2. GET /get-one-book/:index
 
 app.get("/get-one-book/:index", async (req, res) => {
-  // get the value of the dynamic parameter
-  const index = req.params.index;
-  // call the helper function
-  const book = await getOneBook(index);
-  // send the book as JSON in the response
-  res.json(book);
+  // try all of this risky code. if there's an error, catch it
+  try {
+    // get the value of the dynamic parameter
+    const index = req.params.index;
+    // call the helper function
+    const book = await getOneBook(index);
+    // send the book as JSON in the response
+    res.json(book);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Server error. Something went wrong while getting the book",
+    });
+  }
 });
 
 // 3. GET /get-one-book-title/:index — try writing this one yourself!
